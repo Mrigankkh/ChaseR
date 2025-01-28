@@ -299,6 +299,12 @@ EGAPathState UGAPathComponent::SmoothPath(const FVector& StartPoint, const TArra
 	}
 
 	FPathStep CurrentStep =  UnsmoothedSteps[0];
+	if (!LineTrace(StartPoint, Grid->GetCellPosition(UnsmoothedSteps.Last().CellRef), Grid))
+	{
+		SmoothedStepsOut.Add(UnsmoothedSteps.Last());
+		return GAPS_Active;
+
+	}
 
 	while (true)
 	{
