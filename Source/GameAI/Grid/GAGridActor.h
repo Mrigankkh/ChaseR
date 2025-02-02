@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Math/MathFwd.h"
+#include "GAGridMap.h"
 #include "GAGridActor.generated.h"
 
 class UBoxComponent;
@@ -176,7 +177,8 @@ public:
 	bool RefreshDataFromNav();
 
 	// Debugging and Visualization --------------------------------
-
+	UPROPERTY(EditAnywhere)
+	FGAGridMap DebugGridMap;
 	// Debug mesh component
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	TObjectPtr<UProceduralMeshComponent> DebugMeshComponent;

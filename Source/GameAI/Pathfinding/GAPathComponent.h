@@ -71,7 +71,7 @@ class UGAPathComponent : public UActorComponent
 	EGAPathState AStar(const FVector& StartPoint, TArray<FPathStep>& StepsOut) const;
 
 	EGAPathState SmoothPath(const FVector& StartPoint, const TArray<FPathStep>& UnsmoothedSteps, TArray<FPathStep>& SmoothedStepsOut) const;
-
+	bool Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceMapOut) const;
 	void FollowPath();
 
 	// Parameters ------------------------
