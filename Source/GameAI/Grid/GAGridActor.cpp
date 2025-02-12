@@ -563,6 +563,7 @@ bool AGAGridActor::RefreshDebugMesh()
 
 	return true;
 }
+
 bool AGAGridActor::RefreshDebugTexture()
 {
 	bool Result = false;
@@ -600,7 +601,7 @@ bool AGAGridActor::RefreshDebugTexture()
 		if (DebugGridMap.IsValid())
 		{
 			float MaxValue;
-			DebugGridMap.GetMaxValue(MaxValue);
+			DebugGridMap.GetMaxValue(MaxValue, BIG_NUMBER);
 
 			for (int32 Y = 0; Y < YCount; Y++)
 			{
@@ -665,6 +666,5 @@ bool AGAGridActor::RefreshDebugTexture()
 
 	return Result;
 }
-
 
 UE_ENABLE_OPTIMIZATION

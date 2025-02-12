@@ -1,6 +1,10 @@
 #include "GAPathComponent.h"
+
+#include "GameMapsSettings.h"
+#include "VectorTypes.h"
 #include "GameFramework/NavMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Math/UnitConversion.h"
 
 UGAPathComponent::UGAPathComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -37,6 +41,27 @@ const AGAGridActor* UGAPathComponent::GetGridActor() const
 
 		return Result;
 	}
+}
+
+/**
+ *  A setter for steps
+ * @param steps 
+ */
+void UGAPathComponent::SetSteps(TArray<FPathStep>& steps)
+{
+
+	if (steps.Num() > 0)
+	Steps = steps;
+	
+}
+
+/**
+ * A setter for the state. Sets state to GAPS_ACTIVE
+ */
+void UGAPathComponent::SetState()
+{
+	State = GAPS_Active;
+	
 }
 
 APawn* UGAPathComponent::GetOwnerPawn()
@@ -80,8 +105,12 @@ void UGAPathComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, 
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
+/**
+ *  Creates A new path after smoothing the steps.
+ */
 EGAPathState UGAPathComponent::RefreshPath()
 {
+
 	AActor* Owner = GetOwnerPawn();
 	FVector StartPoint = Owner->GetActorLocation();
 	check(bDestinationValid);
@@ -95,23 +124,14 @@ EGAPathState UGAPathComponent::RefreshPath()
 	}
 	else
 	{
-		TArray<FPathStep> UnsmoothedSteps;
+		TArray<FPathStep> UnsmoothedSteps = Steps;
 
 		Steps.Empty();
 
-		// Replan the path!
-		State = AStar(StartPoint, UnsmoothedSteps);
-
-		// To debug A* without smoothing:
-		//Steps = UnsmoothedSteps;
-
-		if (State == EGAPathState::GAPS_Active)
-		{
-			// Smooth the path!
-			State = SmoothPath(StartPoint, UnsmoothedSteps, Steps);
-		}
+		State = SmoothPath(StartPoint, UnsmoothedSteps, Steps);
+		
 	}
-
+	
 	return State;
 }
 float Heuristic(const FCellRef& A, const FCellRef& B) 
@@ -151,6 +171,7 @@ Path.Remove(Current);
 		FPathStep Step;
 		Step.Set(WorldLocation, Cell); 
 		StepsOut.Add(Step);
+		
 	}
 }
 
@@ -285,6 +306,7 @@ bool LineTrace(const FVector& Start, const FVector& End, const AGAGridActor* Gri
 
 EGAPathState UGAPathComponent::SmoothPath(const FVector& StartPoint, const TArray<FPathStep>& UnsmoothedSteps, TArray<FPathStep>& SmoothedStepsOut) const
 {
+	
 	SmoothedStepsOut.Empty();
 
 	if (UnsmoothedSteps.Num() == 0)
@@ -336,7 +358,6 @@ EGAPathState UGAPathComponent::SmoothPath(const FVector& StartPoint, const TArra
 
 		CurrentStep.Set(Grid->GetCellPosition(UnsmoothedSteps[NextIndex].CellRef), UnsmoothedSteps[NextIndex].CellRef);
 	}
-
 	return GAPS_Active;
 }
 
@@ -346,17 +367,19 @@ void UGAPathComponent::FollowPath()
 	AActor* Owner = GetOwnerPawn();
 	FVector StartPoint = Owner->GetActorLocation();
 
-	check(State == GAPS_Active);
-	check(Steps.Num() > 0);
+	if (State==GAPS_Active && Steps.Num() > 0)
+	//check(State == GAPS_Active);
+	//check(Steps.Num() > 0);
 
-	// Always follow the first step, assuming that we are refreshing the whole path every tick
-	FVector V = Steps[0].Point - StartPoint;
-	V.Normalize();
-
-	UNavMovementComponent* MovementComponent = Owner->FindComponentByClass<UNavMovementComponent>();
-	if (MovementComponent)
 	{
-		MovementComponent->RequestPathMove(V);
+		FVector V = Steps[0].Point - StartPoint;
+		V.Normalize();
+
+		UNavMovementComponent* MovementComponent = Owner->FindComponentByClass<UNavMovementComponent>();
+		if (MovementComponent)
+		{
+			MovementComponent->RequestPathMove(V);
+		}
 	}
 }
 
@@ -384,23 +407,119 @@ EGAPathState UGAPathComponent::SetDestination(const FVector &DestinationPoint)
 	return State;
 }
 
-bool UGAPathComponent::Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceMapOut) const
+/**
+ * Reconstructs path using the Distance Map obtained from Dijkstra's algorithm
+ * @param DistanceMap Dijkstra's distance map
+ * @param StartCell The current location of the bot
+ * @param Current The destination cell of the bot
+ * @param StepsOut 
+ * @param Grid 
+ */
+void UGAPathComponent::ReconstructDijkstra(FGAGridMap DistanceMap, FCellRef& StartCell, FCellRef Current,  TArray<FPathStep>& StepsOut, const AGAGridActor* Grid) const
 {
-	const AGAGridActor* Grid = GetGridActor();
-    
-	// Ensure grid exists
+
+
 	if (!Grid)
 	{
-		return GAPS_Invalid; 
+		// No Grid found!
+		return;
 	}
+	
+	if (!Current.IsValid() || !StartCell.IsValid())
+	{
+		//Reconstructing paths for invalid cell/s.
+		return;
+	}
+
+	StepsOut.Empty(); 
+	TArray<FCellRef> Path;
+	
+	Path.Add(Current);
+
+	while (Current!=StartCell)
+	{
+
+		TArray<FCellRef> Neighbors = GetNeighbors(Current);
+		FCellRef NextCell;
+
+		float MinDistance = FLT_MAX;
+		bool bFoundValidNeighbor = false;
+
+		for (const FCellRef& Neighbor : Neighbors)
+		{
+			ECellData Flags = Grid->GetCellData(Neighbor);
+
+			if (!EnumHasAllFlags(Flags, ECellData::CellDataTraversable) || !Grid->IsCellRefInBounds(Neighbor))
+			{
+				continue; 
+			}
+
+			float NeighbourDist;
+			DistanceMap.GetValue(Neighbor,NeighbourDist) ;
+			if (NeighbourDist < MinDistance)
+			{
+				
+				MinDistance = NeighbourDist;
+				NextCell = Neighbor;
+				bFoundValidNeighbor = true;
+
+			}
+			
+		}
+		//FAILURE
+		if (!bFoundValidNeighbor)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("No neighbor found!"));
+		}
+		if (!NextCell.IsValid() || NextCell == Current )
+		{
+			return ;
+		}
+
+		Current = NextCell;
+		Path.Add(Current);
+		
+	}
+	
+	Algo::Reverse(Path);
+	Path.Remove(Current);
+
+	//Get path from steps.
+	for (const FCellRef& Cell : Path)
+	{
+		FVector WorldLocation = Grid->GetCellPosition(Cell); 
+
+		FPathStep Step;
+		Step.Set(WorldLocation, Cell); 
+		StepsOut.Add(Step);
+		
+	}
+}
+
+/**
+ * Fills th e distance map with Distances based on Dijkstra's Algorithm
+ * @param StartPoint 
+ * @param DistanceMapOut 
+ * @param Grid 
+ * @return 
+ */
+bool UGAPathComponent::Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceMapOut,const  AGAGridActor* Grid) const
+{
+	
+    
+	
+	// Min heap comparator
 	auto Comparator = [&DistanceMapOut](const FCellRef& A, const FCellRef& B) {
 		float valA, valB;
 		DistanceMapOut.GetValue(A, valA);
 		DistanceMapOut.GetValue(B, valB);
-		return valA > valB; // Min-heap (lower distance = higher priority)
+		return valA > valB; 
 	};
+	
 	FCellRef StartCell = Grid->GetCellRef(StartPoint);
+	
 	TArray<FCellRef> OpenSet;
+	
 	DistanceMapOut.SetValue(StartCell,0);
 	
 	OpenSet.HeapPush(StartCell, Comparator);
@@ -421,18 +540,16 @@ bool UGAPathComponent::Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceM
 
 			if (!EnumHasAllFlags(Flags, ECellData::CellDataTraversable) || !Grid->IsCellRefInBounds(Neighbor))
 			{
-				//Untraversable cell
 				continue; 
 			}
 
 			float neighValue;
 			DistanceMapOut.GetValue(Neighbor, neighValue);
-			
-			//Assume cost of traversal to neighbour is 1
+
 			float newDistance = currValue + 1;
 
-			// Only update if a shorter path is found
-			if (newDistance < neighValue)
+			// Check if neighbor has been visited or if the new distance is shorter
+			if (neighValue == INFINITY || newDistance < neighValue)
 			{
 				DistanceMapOut.SetValue(Neighbor, newDistance);
 				OpenSet.HeapPush(Neighbor, Comparator);
@@ -440,6 +557,6 @@ bool UGAPathComponent::Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceM
 		}
 		
 	}
-	
+
 	return true;
 }

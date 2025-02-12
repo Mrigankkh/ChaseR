@@ -71,9 +71,10 @@ class UGAPathComponent : public UActorComponent
 	EGAPathState AStar(const FVector& StartPoint, TArray<FPathStep>& StepsOut) const;
 
 	EGAPathState SmoothPath(const FVector& StartPoint, const TArray<FPathStep>& UnsmoothedSteps, TArray<FPathStep>& SmoothedStepsOut) const;
-	bool Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceMapOut) const;
+	bool Dijkstra(const FVector &StartPoint, FGAGridMap &DistanceMapOut, const AGAGridActor* Grid) const;
+	void ReconstructDijkstra(FGAGridMap DistanceMap, FCellRef& StartCell, FCellRef Current,  TArray<FPathStep>& StepsOut,  const AGAGridActor* Grid) const;
 	void FollowPath();
-
+	void SetSteps(TArray<FPathStep>& steps);
 	// Parameters ------------------------
 
 	// When I'm within this distance of my destination, my path is considered finished.
@@ -101,5 +102,7 @@ class UGAPathComponent : public UActorComponent
 
 	UPROPERTY(BlueprintReadWrite)
 	TArray<FPathStep> Steps;
+	void SetState();
+
 
 };
