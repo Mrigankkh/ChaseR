@@ -31,7 +31,11 @@ Each subsection in the implementation overview corresponds to a different assign
 ### Figure 8
 Unreal Engine 5 is overwhelming to begin with and so thing I implemented was a simple figure-8 movement for the robot.  This was done through a simple sinusodial-like movement. The biggest challenge here was the **Drifting** problem wherein the bot would drift in direction while moving in the figure-8.
 
-![Figure 8](https://github.com/Mrigankkh/ChaseR/blob/main/github_assets/Github_figure8.mov)
+
+
+https://github.com/user-attachments/assets/f8ae9ac1-3af4-4232-8da8-cda93057e6d7
+
+
 
 ### A* Pathfinding and Chase Behavior
 To enable **chase behavior**, I integrated A* pathfinding into the AI using the *UGAPathComponent*. The AI now dynamically calculates the best path towards the target. I implemented a custom **Line-Trace Algorithm** to ensure that the robot avoids any obstacles in its path. After the robot discovers a path, A **smoothing function** was added to ensure fluid movement along the path.
