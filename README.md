@@ -47,9 +47,15 @@ https://github.com/user-attachments/assets/8e07c749-23ae-4221-8d0f-c7aaefaf30fc
 
 ### Spatial Functions
 
-used **Dijkstra’s algorithm** to calculate the shortest path to the target, creating a **distance map**. For each potential position, I evaluated **line-of-sight (LOS)**, **target distance**, and **path distance** in a separate **GridMap**.
+I used **Dijkstra’s algorithm** to calculate the shortest path to the target, creating a **distance map**. For each potential position, I evaluated **line-of-sight (LOS)**, **target distance**, and **path distance** in a separate **GridMap**.
 
 These values were processed through the **spatial function's response curve** to determine the best position based on the AI's behavior, such as **hide**, **hold**, or **flee**. This allowed the AI to choose the optimal destination based on its current goal.
+
+
+https://github.com/user-attachments/assets/c5a402de-35e6-41ca-807c-feadf14ba273
+
+
+In the video, the first clip shows the hold behaviour, the second shows the flee behaviour and the third shows the hide behaviour. The Colors here indicate the values evaluated using Spatial functions of these different behaviours. Red means higher value i.e. the AI robot wants to go to the red squares.
 
 ### Behavior Trees
 Using Behavior Trees, I designed AI behavior for different character types: Leader, Soldier, and Fodder. Each type had distinct actions such as charging or self-destructing based on the situation. The trees were driven by a blackboard, allowing the AI to dynamically adjust its behavior in response to the game environment.
