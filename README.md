@@ -6,8 +6,8 @@ An AI driven Unreal Engine 5 project done as coursework for the graduate course 
 # Table of Contents
 
 -   [Overview](#overview)
--   [Key Features](#key-features)
 -   [Implementation Overview](#implementation-overview)
+-   [Installation & Setup](#Installation-&-Setup)
 
 
 ## Overview
@@ -59,3 +59,21 @@ In the video, the first clip shows the hold behaviour, the second shows the flee
 
 ### Behavior Trees
 Using Behavior Trees, I designed AI behavior for different character types: Leader, Soldier, and Fodder. Each type had distinct actions such as charging or self-destructing based on the situation. The trees were driven by a blackboard, allowing the AI to dynamically adjust its behavior in response to the game environment.
+
+## Installation & Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/ChaseR.git
+   cd ChaseR
+Open in Unreal Engine 5:
+
+Double-click the .uproject file, or open it through the Epic Games Launcher.
+Let the project compile any necessary modules.
+Compile:
+
+If using an IDE like Visual Studio or Rider, open the .sln file and build it.
+Alternatively, let Unreal Editor handle the compile on project load.
+Run:
+
+Press Play in the Unreal Editor to see the AI in action.
