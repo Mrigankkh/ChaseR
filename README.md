@@ -40,6 +40,11 @@ https://github.com/user-attachments/assets/f8ae9ac1-3af4-4232-8da8-cda93057e6d7
 ### A* Pathfinding and Chase Behavior
 To enable **chase behavior**, I integrated A* pathfinding into the AI using the *UGAPathComponent*. The AI now dynamically calculates the best path towards the target. I implemented a custom **Line-Trace Algorithm** to ensure that the robot avoids any obstacles in its path. After the robot discovers a path, A **smoothing function** was added to ensure fluid movement along the path.
 
+
+
+https://github.com/user-attachments/assets/8e07c749-23ae-4221-8d0f-c7aaefaf30fc
+
+
 ### Spatial Functions
 
 used **Dijkstra’s algorithm** to calculate the shortest path to the target, creating a **distance map**. For each potential position, I evaluated **line-of-sight (LOS)**, **target distance**, and **path distance** in a separate **GridMap**.
