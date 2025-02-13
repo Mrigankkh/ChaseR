@@ -50,3 +50,6 @@ https://github.com/user-attachments/assets/8e07c749-23ae-4221-8d0f-c7aaefaf30fc
 used **Dijkstra’s algorithm** to calculate the shortest path to the target, creating a **distance map**. For each potential position, I evaluated **line-of-sight (LOS)**, **target distance**, and **path distance** in a separate **GridMap**.
 
 These values were processed through the **spatial function's response curve** to determine the best position based on the AI's behavior, such as **hide**, **hold**, or **flee**. This allowed the AI to choose the optimal destination based on its current goal.
+
+### Behavior Trees
+Using Behavior Trees, I designed AI behavior for different character types: Leader, Soldier, and Fodder. Each type had distinct actions such as charging or self-destructing based on the situation. The trees were driven by a blackboard, allowing the AI to dynamically adjust its behavior in response to the game environment.
